@@ -24,25 +24,29 @@ class Game
         # reminder you can save the game if need be
         # or print out the moves
         while !@checkmate
-            # system "clear"
-            # @board.to_s
-            # puts "${active_player.name}'s move"
-            # move = gets.chomp
-            # begin
-            #   @board.make_move(active_player, move)
-            # rescue => exception
-            #   puts exception.message
-            #   retry
-            # end
-            # checkmate = true if @board.win?
+            system "clear"
+            @board.to_s
+            puts "#{active_player.name}'s move"
+            begin
+                move = gets.chomp.downcase
+                process_move(move)
+            rescue => exception
+                system "clear"
+                @board.to_s
+                puts exception.message
+                puts "Try again:"
+                retry
+            end
+            checkmate = true if @board.win?
         end
         puts "Congratulations #{@active_player}"
+        @board.to_s
         @board.moves.to_s
     end
 
     def load_game
         puts "Choose a game to load:"
-        saved_games = Dir.open("saved_games")
+        saved_games = Dir.open("/saved_games")
         names = []
         if saved_games.empty?
             abort "No saved games"
@@ -60,7 +64,7 @@ class Game
             puts exception.message
             retry
         end
-        marshal_game = File.open("saved_games/#{choice}","r")
+        marshal_game = File.open("/saved_games/#{choice}","r")
         game_inception = Marshal.load(marshal_game)
         game_inception.play
     end
@@ -75,7 +79,7 @@ class Game
             puts exception.message
             retry
         else
-            saved_game = File.open("saved_games/#{filename}.txt", "w")
+            saved_game = File.open("/saved_games/#{filename}.txt", "w")
         end
         
         saved_game.puts(serialized_game = Marshal::dump(self))
@@ -96,5 +100,12 @@ class Game
         end
     end
 
+    def process_move(move)
+        if move == "help"
+            self.help
+        else
+            @board.make_move(move)
+        end
+    end
 
 end
