@@ -1,9 +1,11 @@
-module Piece
-    attr_reader :string, :alive
+class Piece
+    attr_reader :color, :img, :name
+    attr_accessor :alive
     
-    def initialize(color)
+    def initialize(color, img, name)
         @color = color
-        @string = "PIECE"
+        @img = img
+        @name = name
         @alive = true
     end
     

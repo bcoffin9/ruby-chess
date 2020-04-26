@@ -1,10 +1,11 @@
+require "board"
 
 class Game
     attr_reader :players
     attr_accessor :checkmate, :active_player
 
     def initialize(p1,p2)
-        @players = { "White" => p1, "Black" => p2 }        @active_player = @players["White"]
+        @active_player = "white"
         @checkmate = false
         # @board = Board.new
     end
@@ -30,7 +31,7 @@ class Game
             puts "#{active_player.name}'s move"
             begin
                 move = gets.chomp.downcase
-                process_move(move)
+                process_move(move, @active_player)
             rescue => exception
                 system "clear"
                 @board.to_s
@@ -39,10 +40,10 @@ class Game
                 retry
             end
             checkmate = true if @board.win?
+            switch_player if !board.win?
         end
         puts "Congratulations #{@active_player}"
         @board.to_s
-        # @board.moves.to_s later functionality
     end
 
     def load_game
@@ -102,22 +103,15 @@ class Game
     end
 
     def process_move(move)
-        if move == "help"
-            self.help
-        elsif move == "save"
+        if move == "save"
             self.save_game
         else
             @board.make_move(move)
         end
     end
 
-    def help
-        puts "K - King Q - Queen B - Bishop N - kNight R - Rook"
-        puts "To move a pawn, specify the square it will move to"
-        puts "Examples: e4 - pawn to e4, Qa8 - queen to a8"
-        puts "Castling, promotion, and en passant do not have"
-        puts "special notion. Just specify where you want the"
-        puts "piece to move."
+    def switch_player
+        @active_player = @active_player == "white" ? "black" : "white"
     end
 
 end

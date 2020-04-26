@@ -28,9 +28,5 @@ RSpec.describe ChessCell do
         it "returns address" do
             expect(cell.address).to eq "a1"
         end
-
-        it "does not allow address to change" do
-            expect { cell.address = "a2" }.to raise_error(NoMethodError)
-        end
     end
 end

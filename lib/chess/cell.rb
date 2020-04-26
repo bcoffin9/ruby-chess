@@ -1,9 +1,8 @@
 class ChessCell
     require 'colorize'
-    attr_writer :piece
-    attr_reader :color, :address
+    attr_accessor :piece, :color, :address
 
-    def initialize(piece, color, address)
+    def initialize(piece=nil, color=nil, address=nil)
         @piece = piece
         @color = color
         @address = address
