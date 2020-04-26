@@ -3,7 +3,7 @@ class ChessCell
     attr_writer :piece
     attr_reader :color, :address
 
-    def initialize(piece = nil, color, address)
+    def initialize(piece, color, address)
         @piece = piece
         @color = color
         @address = address
