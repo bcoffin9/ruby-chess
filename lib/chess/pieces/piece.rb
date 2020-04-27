@@ -4,7 +4,7 @@ class Piece
     
     def initialize(color, img, name)
         @color = color
-        @img = img
+        @img = " #{img} "
         @name = name
         @alive = true
     end

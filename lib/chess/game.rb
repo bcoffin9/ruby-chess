@@ -1,13 +1,13 @@
-require "board"
+require_relative "./board.rb"
 
 class Game
     attr_reader :players
     attr_accessor :checkmate, :active_player
 
-    def initialize(p1,p2)
+    def initialize
         @active_player = "white"
         @checkmate = false
-        # @board = Board.new
+        @board = Board.new
     end
 
     public
@@ -16,8 +16,9 @@ class Game
         puts "We assume one of you know all the rules of chess"
         puts "To start a new game, enter \"1\""
         puts "To continue a saved game, enter \"2\""
-        selection = game_selection(gets.chomp.to_i)
-        selection == "New" ? self.play : self.load_game
+        input = gets.chomp.to_i
+        selection = game_selection(input)
+        selection == "New" ? play : load_game
     end
 
     def play
@@ -28,7 +29,8 @@ class Game
         while !@checkmate
             system "clear"
             @board.to_s
-            puts "#{active_player.name}'s move"
+            puts "#{active_player}'s move"
+            puts "Ex: \"b1 c3\""
             begin
                 move = gets.chomp.downcase
                 process_move(move, @active_player)
@@ -43,7 +45,7 @@ class Game
             switch_player if !board.win?
         end
         puts "Congratulations #{@active_player}"
-        @board.to_s
+        puts @board
     end
 
     def load_game
@@ -92,10 +94,10 @@ class Game
     private
     def game_selection(input)
         begin
-            input = gets.chomp.to_i
             raise "Please enter either a 1 or 2" if !((1..2).include?(input))
         rescue => exception
             puts exception.message
+            input = gets.chomp.to_i
             retry
         else
             return input == 1 ? "New" : "Old"

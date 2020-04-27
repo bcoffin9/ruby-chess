@@ -7,7 +7,7 @@ require_relative './pieces/rook.rb'
 require_relative "./cell.rb"
 
 class Board
-    FILES = ("a".."h").to_a
+    FILES = (" a ".." h ").to_a
     RANKS = ("1".."8").to_a
 
     attr_accessor :ranks
@@ -23,14 +23,14 @@ class Board
     def make_move(string)
     end
 
-    def to_s
+    def to_s # can just use puts board now
         puts "help | save"
-        puts "  " + FILES.join(" ") + "  "
+        puts "  " + FILES.join("") + "  "
         8.times do |idx|
             idx = 8 - 1 - idx
             puts "#{RANKS[idx]} " + print_rank(@ranks[idx]) + " #{RANKS[idx]}"
         end
-        puts "  " + FILES.join(" ") + "  "
+        puts "  " + FILES.join("") + "  "
     end
 
     private
@@ -50,11 +50,11 @@ class Board
 
     def get_color(rank, file)
         if rank + file == 0
-            return "blue"
+            return "green"
         elsif (rank + file) % 2 == 1
-            return "blue"
+            return "white"
         else
-            return "black"
+            return "green"
         end
     end
 
@@ -63,14 +63,14 @@ class Board
     end
 
     def set_first_rank
-        @ranks[0][0] = Rook.new("white")
-        @ranks[0][1] = Knight.new("white")
-        @ranks[0][2] = Bishop.new("white")
-        @ranks[0][3] = Queen.new("white")
-        @ranks[0][4] = King.new("white")
-        @ranks[0][5] = Bishop.new("white")
-        @ranks[0][6] = Knight.new("white")
-        @ranks[0][7] = Rook.new("white")
+        @ranks[0][0].piece = Rook.new("white")
+        @ranks[0][1].piece = Knight.new("white")
+        @ranks[0][2].piece = Bishop.new("white")
+        @ranks[0][3].piece = Queen.new("white")
+        @ranks[0][4].piece = King.new("white")
+        @ranks[0][5].piece = Bishop.new("white")
+        @ranks[0][6].piece = Knight.new("white")
+        @ranks[0][7].piece = Rook.new("white")
     end
 
     def set_second_rank
@@ -86,20 +86,20 @@ class Board
     end
 
     def set_eighth_rank
-        @ranks[7][0] = Rook.new("black")
-        @ranks[7][1] = Knight.new("black")
-        @ranks[7][2] = Bishop.new("black")
-        @ranks[7][3] = Queen.new("black")
-        @ranks[7][4] = King.new("black")
-        @ranks[7][5] = Bishop.new("black")
-        @ranks[7][6] = Knight.new("black")
-        @ranks[7][7] = Rook.new("black")
+        @ranks[7][0].piece = Rook.new("black")
+        @ranks[7][1].piece = Knight.new("black")
+        @ranks[7][2].piece = Bishop.new("black")
+        @ranks[7][3].piece = Queen.new("black")
+        @ranks[7][4].piece = King.new("black")
+        @ranks[7][5].piece = Bishop.new("black")
+        @ranks[7][6].piece = Knight.new("black")
+        @ranks[7][7].piece = Rook.new("black")
     end
 
     def print_rank(rank)
         result = ""
         rank.each do |cell|
-            result << cell.cell.to_s
+            result << cell.to_s
         end
         result
     end

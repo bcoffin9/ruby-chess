@@ -3,26 +3,28 @@ require 'spec_helper'
 RSpec.describe ChessCell do
     let(:cell) { ChessCell.new("#{piece}", "#{color}", "a1") }
 
-    context "created as a black cell with a rook" do
-        let(:color) { "black" }
+    context "created as a white cell with a rook" do
+        let(:color) { "white" }
         let(:piece) { "rook" }
 
-        it "and prints out with black background and pad" do
-            expect(cell.to_s).to eq "rook ".on_black
+        it "and prints out with white background and pad" do
+            allow(cell.piece).to receive(:img) {"rook"}
+            expect(cell.to_s).to eq "rook".black.on_white
         end
     end
 
-    context "created as an empty blue cell" do
-        let(:color) { "blue" }
+    context "created as an empty green cell" do
+        let(:color) { "green" }
         let(:piece) { nil }
 
-        it "prints out with blue background and pad" do
-            expect(cell.to_s).to eq " ".on_blue
+        it "prints out with green background and pad" do
+            allow(cell.piece).to receive(:img) { nil }
+            expect(cell.to_s).to eq "   ".black.on_green
         end
     end
 
     context ".address" do
-        let(:color) { "blue" }
+        let(:color) { "green" }
         let(:piece) { "black" }
 
         it "returns address" do
