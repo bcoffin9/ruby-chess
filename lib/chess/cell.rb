@@ -16,7 +16,6 @@ class ChessCell
     private
 
     def get_piece
-        @piece.nil? ? "   " : @piece.img.black #need space for rendering
+        @piece.nil? ? "   ".black : @piece.img.black #need space for rendering
     end
-
 end

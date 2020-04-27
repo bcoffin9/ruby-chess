@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe ChessCell do
-    let(:cell) { ChessCell.new("#{piece}", "#{color}", "a1") }
+    let(:cell) { ChessCell.new(piece, "#{color}", "a1") }
 
     context "created as a white cell with a rook" do
         let(:color) { "white" }
@@ -18,7 +18,6 @@ RSpec.describe ChessCell do
         let(:piece) { nil }
 
         it "prints out with green background and pad" do
-            allow(cell.piece).to receive(:img) { nil }
             expect(cell.to_s).to eq "   ".black.on_green
         end
     end

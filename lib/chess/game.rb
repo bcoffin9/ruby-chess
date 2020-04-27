@@ -30,7 +30,7 @@ class Game
             system "clear"
             @board.to_s
             puts "#{active_player}'s move"
-            puts "Ex: \"b1 c3\""
+            puts "Ex: \"b1 c3\" - move the piece at b1 to c3"
             begin
                 move = gets.chomp.downcase
                 process_move(move, @active_player)

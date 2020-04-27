@@ -12,7 +12,7 @@ RSpec.describe Bishop do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2657"
+            expect(piece.img).to eq " \u2657 "
         end
     end
 
@@ -27,7 +27,7 @@ RSpec.describe Bishop do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265d"
+            expect(piece.img).to eq " \u265d "
         end
     end
 end
@@ -44,7 +44,7 @@ RSpec.describe King do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2654"
+            expect(piece.img).to eq " \u2654 "
         end
 
         it "castling sequence is enabled" do
@@ -68,7 +68,7 @@ RSpec.describe King do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265a"
+            expect(piece.img).to eq " \u265a "
         end
     end
 end
@@ -85,7 +85,7 @@ RSpec.describe Knight do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2658"
+            expect(piece.img).to eq " \u2658 "
         end
     end
 
@@ -100,7 +100,7 @@ RSpec.describe Knight do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265e"
+            expect(piece.img).to eq " \u265e "
         end
     end
 end
@@ -117,7 +117,7 @@ RSpec.describe Pawn do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2659"
+            expect(piece.img).to eq " \u2659 "
         end
 
         it "en passant sequence is enabled" do
@@ -141,7 +141,7 @@ RSpec.describe Pawn do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265f"
+            expect(piece.img).to eq " \u265f "
         end
     end
 end
@@ -158,7 +158,7 @@ RSpec.describe Queen do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2655"
+            expect(piece.img).to eq " \u2655 "
         end
     end
 
@@ -173,7 +173,7 @@ RSpec.describe Queen do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265b"
+            expect(piece.img).to eq " \u265b "
         end
     end
 end
@@ -190,7 +190,7 @@ RSpec.describe Rook do
         end
 
         it "has the white image" do
-            expect(piece.img).to eq "\u2656"
+            expect(piece.img).to eq " \u2656 "
         end
 
         it "castling sequence is enabled" do
@@ -214,7 +214,7 @@ RSpec.describe Rook do
         end
 
         it "has the black image" do
-            expect(piece.img).to eq "\u265c"
+            expect(piece.img).to eq " \u265c "
         end
     end
 end
@@ -231,7 +231,7 @@ RSpec.describe Piece do
         end
 
         it "shows its image" do
-            expect(piece.img).to eq "img"
+            expect(piece.img).to eq " img "
         end
     end
 end
