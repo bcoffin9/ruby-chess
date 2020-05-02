@@ -123,9 +123,9 @@ RSpec.describe Pawn do
         it "first move removes two step" do
             piece.first_move
             expect(piece.moves).to eq [
-                [-1,1], # up and right
-                [-1,-1],# up and left
-                [-1,0]  # up
+                [1,1],  # up and right
+                [0,1],  # up
+                [-1,1], # up and left
             ]
         end
     end
@@ -147,9 +147,9 @@ RSpec.describe Pawn do
         it "first move removes two step" do
             piece.first_move
             expect(piece.moves).to eq [
-                [1,1],  # down and right
-                [1,0],  # down
-                [1,-1], # down and left
+                [-1,-1], # down and left
+                [1,-1],  # down and right
+                [0,-1]   # down
             ]
         end
     end
@@ -200,15 +200,6 @@ RSpec.describe Rook do
 
         it "has the white image" do
             expect(piece.img).to eq " \u2656 "
-        end
-
-        it "castling sequence is enabled" do
-            expect(piece.castling).to be true
-        end
-
-        it "castling can be disabled" do
-            piece.disable_castling
-            expect(piece.castling).to_not be true
         end
     end
 

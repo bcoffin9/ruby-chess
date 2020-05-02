@@ -8,17 +8,17 @@ class Pawn < Piece
         img = color == "white" ? "\u2659" : "\u265f"
         if color == "white"
             moves = [
-                [-2,0], # first move up
-                [-1,1], # up and right
-                [-1,-1],# up and left
-                [-1,0]  # up
+                [0,2],  # first move up
+                [1,1],  # up and right
+                [0,1],  # up
+                [-1,1], # up and left
             ]
         else
             moves = [
-                [2,0],  #first move down
-                [1,1],  # down and right
-                [1,0],  # down
-                [1,-1], # down and left
+                [0,-2],  # first move down
+                [-1,-1], # down and left
+                [1,-1],  # down and right
+                [0,-1]   # down
             ]
         end
 
