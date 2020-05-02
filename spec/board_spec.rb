@@ -17,4 +17,15 @@ RSpec.describe Board do
             expect(result).to be true
         end
     end
+
+    context "making a move on clean board" do
+
+        it "handles a capture" do
+            
+        end
+
+        it "handles a promotion event" do
+            
+        end
+    end
 end

@@ -1,8 +1,12 @@
 require_relative "./board.rb"
+require_relative "./board_nav.rb"
+
 
 class Game
     attr_reader :players
-    attr_accessor :checkmate, :active_player
+    attr_accessor :checkmate, :active_player, :board
+
+    include BoardNav
 
     def initialize
         @active_player = "white"
@@ -33,7 +37,7 @@ class Game
             puts "Ex: \"b1 c3\" - move the piece at b1 to c3"
             begin
                 move = gets.chomp.downcase
-                process_move(move, @active_player)
+                make_move(move, @active_player)
             rescue => exception
                 system "clear"
                 @board.to_s
@@ -41,6 +45,7 @@ class Game
                 puts "Try again:"
                 retry
             end
+            @board.make_move(move)
             checkmate = true if @board.win?
             switch_player if !board.win?
         end
@@ -48,27 +53,69 @@ class Game
         puts @board
     end
 
+    def validate_move(move, player)
+        if move == "save"
+            self.save_game
+        else
+            raise "that is not a valid move" if move.match(/^[a-h][1-8] [a-h][1-8]$/).nil?
+            raise "player must be white or black" if !["black", "white"].include?(player)
+
+            parsed_string = move.split(" ")
+            from = parsed_string[0]
+            to = parsed_string[1]
+            from_cell = @board.get_cell(from)
+            to_cell = @board.get_cell(to)
+
+            raise "select one of your own pieces" if from_cell.piece.color != player
+            if !to_cell.piece.nil?
+                raise "one of your own pieces is on that square" if to_cell.piece.color == player
+            end
+
+            # loop on the piece's possible moves
+            # for the direction, make a step
+            # check to see if it is the cell
+            #   if yes, make the move and break and set boolean
+            # if not, continue
+            piece = from_cell.piece
+            piece.moves.each do |move|
+                current_cell = from_cell
+
+                loop do
+                    
+                    if !slider
+                        break
+                    end
+
+                end
+            end
+            
+        end
+
+    end
+
     def load_game
+        system "clear"
         puts "Choose a game to load:"
-        saved_games = Dir.open("/saved_games")
-        names = []
-        if saved_games.empty?
+        if Dir.empty?("saved_games")
             abort "No saved games"
         else
+            saved_games = Dir.open("saved_games")
+            names = []
             saved_games.each_child do |game|
                 puts game
                 names << game
             end
         end
 
+        choice = gets.chomp
         begin
-            choice = gets.chomp
-            raise "Please select a file, using the exact text you can see" if names.find_index(choice) == nil
+            raise "Please select a file, using the exact text you see" if names.find_index(choice) == nil
         rescue => exception
             puts exception.message
+            choice = gets.chomp
             retry
         end
-        marshal_game = File.open("/saved_games/#{choice}","r")
+        marshal_game = File.open("saved_games/#{choice}","r")
         game_inception = Marshal.load(marshal_game)
         game_inception.play
     end
@@ -78,12 +125,12 @@ class Game
         puts "Please name your game"
         begin
             filename = gets.chomp
-            raise "That name already exists" if File.exists?("saved_games/#{filename}.txt")
+            raise "That name already exists" if File.exists?("/saved_games/#{filename}.txt")
         rescue => exception
             puts exception.message
             retry
         else
-            saved_game = File.open("/saved_games/#{filename}.txt", "w")
+            saved_game = File.open("saved_games/#{filename}.txt", "w")
         end
         
         saved_game.puts(serialized_game = Marshal::dump(self))
@@ -92,6 +139,7 @@ class Game
     end
 
     private
+
     def game_selection(input)
         begin
             raise "Please enter either a 1 or 2" if !((1..2).include?(input))
@@ -101,14 +149,6 @@ class Game
             retry
         else
             return input == 1 ? "New" : "Old"
-        end
-    end
-
-    def process_move(move)
-        if move == "save"
-            self.save_game
-        else
-            @board.make_move(move)
         end
     end
 

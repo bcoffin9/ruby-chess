@@ -120,13 +120,13 @@ RSpec.describe Pawn do
             expect(piece.img).to eq " \u2659 "
         end
 
-        it "en passant sequence is enabled" do
-            expect(piece.en_passant).to be true
-        end
-
-        it "en passant can be disabled" do
-            piece.disable_en_passant
-            expect(piece.en_passant).to_not be true
+        it "first move removes two step" do
+            piece.first_move
+            expect(piece.moves).to eq [
+                [-1,1], # up and right
+                [-1,-1],# up and left
+                [-1,0]  # up
+            ]
         end
     end
 
@@ -142,6 +142,15 @@ RSpec.describe Pawn do
 
         it "has the black image" do
             expect(piece.img).to eq " \u265f "
+        end
+
+        it "first move removes two step" do
+            piece.first_move
+            expect(piece.moves).to eq [
+                [1,1],  # down and right
+                [1,0],  # down
+                [1,-1], # down and left
+            ]
         end
     end
 end

@@ -1,6 +1,8 @@
 require "chess/version"
 require_relative "./chess/cell.rb"
 require_relative "./chess/board.rb"
+require_relative "./chess/board_nav.rb"
+require_relative "./chess/game.rb"
 require_relative "./chess/pieces/piece.rb"
 require_relative "./chess/pieces/bishop.rb"
 require_relative "./chess/pieces/king.rb"

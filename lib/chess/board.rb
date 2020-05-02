@@ -20,11 +20,16 @@ class Board
     def win?
     end
 
-    def make_move(string)
+    def make_move(piece, to_cell)
+        
+    end
+
+    def get_cell(address) #used in validate_move in game class
+        @ranks.flatten.find { |item| item.address == address }
     end
 
     def to_s # can just use puts board now
-        puts "help | save"
+        puts "save at any by typing \"save\""
         puts "  " + FILES.join("") + "  "
         8.times do |idx|
             idx = 8 - 1 - idx
@@ -48,7 +53,7 @@ class Board
         set_eighth_rank
     end
 
-    def get_color(rank, file)
+    def get_color(rank, file) #used in board generation
         if rank + file == 0
             return "green"
         elsif (rank + file) % 2 == 1
@@ -58,8 +63,8 @@ class Board
         end
     end
 
-    def get_address(rank, file)
-        FILES[file] + RANKS[rank]
+    def get_address(rank, file) #used in board generation
+        FILES[file].strip + RANKS[rank].strip
     end
 
     def set_first_rank
