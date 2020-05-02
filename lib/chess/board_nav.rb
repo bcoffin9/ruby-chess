@@ -28,12 +28,16 @@ module BoardNav
         end
 
         if (1..8).include?(rank)
-            arr.push(8 - rank)
+            arr.push(rank-1)
         else
             return []
         end
 
         return arr
+    end
+
+    def self.on_board?(x, y)
+        ((0..7).include?(x) && (0..7).include?(y))
     end
     
 end

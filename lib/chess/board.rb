@@ -5,6 +5,7 @@ require_relative './pieces/pawn.rb'
 require_relative './pieces/queen.rb'
 require_relative './pieces/rook.rb'
 require_relative "./cell.rb"
+require_relative "./board_nav.rb"
 
 class Board
     FILES = (" a ".." h ").to_a
@@ -12,16 +13,24 @@ class Board
 
     attr_accessor :ranks
 
+    include BoardNav
+
     def initialize
         @ranks = Array.new(8) { Array.new(8) { ChessCell.new } }
         setup_board
     end
 
-    def win?
-    end
+    def make_move(move)
+        from, to = move.split(" ")
+        from_cell = get_cell(from)
+        to_cell = get_cell(to)
 
-    def make_move(piece, to_cell)
-        
+        if !to_cell.piece.nil?
+            to_cell.piece.alive = false
+        end
+
+        to_cell.piece = from_cell.piece
+        from_cell.piece = nil
     end
 
     def get_cell(address) #used in validate_move in game class
@@ -29,7 +38,7 @@ class Board
     end
 
     def to_s # can just use puts board now
-        puts "save at any by typing \"save\""
+        puts "save anytime by typing \"save\""
         puts "  " + FILES.join("") + "  "
         8.times do |idx|
             idx = 8 - 1 - idx
