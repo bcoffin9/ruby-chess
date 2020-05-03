@@ -36,7 +36,8 @@ class Game
             system "clear"
             @board.to_s
             puts "#{active_player}'s move"
-            puts "Ex: \"b1 c3\" - move the piece at b1 to c3"
+            puts "Ex: \"b1 c3\" - move the piece at b1 to c3" unless @check
+            puts "CHECK!!" if @check
             begin
                 move = gets.chomp.downcase
                 save_game if move == "save"
@@ -46,11 +47,12 @@ class Game
                 @board.to_s
                 puts exception.message
                 puts "Try again #{@active_player}:"
+                puts "CHECK!!" if @check
                 retry
             end
             @board.make_move(move)
+            @check = true if check?
             checkmate? ? @checkmate = true : switch_player
-            check = true if check?
         end
         puts "Congratulations #{@active_player}"
         @board.to_s
@@ -201,7 +203,19 @@ class Game
         end
     end
 
-    def check?
+    def check? # return boolean value, do not set the instance variable
+        @active_player == "white" ? opponent = "black" : opponent = "white"
+        opponent_king_cell = @board.ranks.flatten.find { |cell| cell.piece != nil && cell.piece.color == opponent && cell.piece.name == "king" }
+        my_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == @active_player }
+        my_cells.each do |cell|
+            move = "#{cell.address} #{opponent_king_cell.address}"
+            begin
+                return true if validate_move(move, @active_player, true)
+            rescue => exception
+                next
+            end
+        end
+
         false
     end
 
