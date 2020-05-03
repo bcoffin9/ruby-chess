@@ -13,7 +13,9 @@ class King < Piece
             [0,-1],  # down
             [-1,-1], # down and left
             [-1,0],  # left
-            [-1,1]   # up and left
+            [-1,1],   # up and left
+            [2,0],   # castling
+            [2,0]
         ]
         super(color, img, "king", moves, false)
         @castling = true

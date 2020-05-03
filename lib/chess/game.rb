@@ -4,13 +4,15 @@ require "pry"
 
 class Game
     attr_reader :players
-    attr_accessor :checkmate, :active_player, :board
+    attr_accessor :checkmate, :active_player, :board, :check
 
     include BoardNav
 
     def initialize
         @active_player = "white"
         @checkmate = false
+        @check = false
+        @en_passant = false
         @board = Board.new
     end
 
@@ -47,8 +49,8 @@ class Game
                 retry
             end
             @board.make_move(move)
-            checkmate = true if self.win?
-            switch_player if !self.win?
+            checkmate? ? @checkmate = true : switch_player
+            check = true if check?
         end
         puts "Congratulations #{@active_player}"
         @board.to_s
@@ -72,15 +74,11 @@ class Game
             raise "one of your own pieces is on that square" if to_cell.piece.color == player
         end
 
-        # loop on the piece's possible moves
-        # for the direction, make a step
-        # check to see if it is the cell
-        #   if yes, make the move and break and set boolean
-        # if not, continue
         piece = from_cell.piece
         slider = piece.slider
         valid_move = false
         piece.moves.each do |move|
+            break if valid_move
             current_cell = from_cell
             x, y = BoardNav.address_to_coord(current_cell.address)
             x_shift, y_shift = move
@@ -92,34 +90,37 @@ class Game
                 break if !BoardNav.on_board?(x, y) # if suggested move is off board
 
                 if !slider # condition for while loop
-                    valid_move = true if @board.ranks[y][x] == to_cell # holy shiiiit we made it!
+                    if !shadow
+                        valid_move = true if @board.ranks[y][x] == to_cell && validate_king_safety(from_cell) # holy shiiiit we made it!
+                    else
+                        valid_move = true if @board.ranks[y][x] == to_cell
+                    end
                     break
                 end
                 
-                if @board.ranks[y][x] == to_cell
-                    valid_move = true if @board.ranks[y][x] == to_cell
-                    validate_king_safety(from_cell) if !shadow
+                if @board.ranks[y][x] == to_cell # to_cell has been reached
+                    if !shadow
+                        valid_move = true if validate_king_safety(from_cell) # does it expose the king?
+                    else
+                        valid_move = true # king has been exposed
+                    end
                     break
                 end
 
                 if !shadow                                    # what will happen if we are not running validate king safety
                     break if !@board.ranks[y][x].piece.nil?   # there is a piece in the way
                 else                                          # occurs when running validate_king_safety
-                    break if !@board.ranks[y][x].piece.nil? && @board.ranks[y][x] != shadow_cell
+                    break if !@board.ranks[y][x].piece.nil? && @board.ranks[y][x] != shadow_cell # allows shadow piece to move through from_cell
                 end
 
             end
         end
 
         if !shadow
-            raise "that piece cannot move to that square" if !valid_move
+            raise "that piece cannot move to that square" if !valid_move # none of the directions got the to_cell
         else
             return valid_move # return true for validate_king_safety
         end 
-    end
-
-    def win?
-        false
     end
 
     def load_game
@@ -185,16 +186,27 @@ class Game
         @active_player = @active_player == "white" ? "black" : "white"
     end
 
-    def validate_king_safety(from_cell)
-        in_danger = false
+    def validate_king_safety(from_cell) # used to see if move made exposes the king
         from_cell.piece.color == "white" ? opponent = "black" : opponent = "white"
-        my_king_cell = @board.ranks.flatten.find { |cell| cell.piece != nil && cell.piece.name == "king" && cell.piece.color == from_cell.piece.color}
+        my_king_cell = @board.ranks.flatten.find { |cell| cell.piece != nil && cell.piece.name == "king" && cell.piece.color == from_cell.piece.color }
 
         opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == opponent }
         opponent_cells.each do |cell|
             move = "#{cell.address} #{my_king_cell.address}"
-            in_danger = validate_move(move, opponent, true, from_cell)
+            begin
+                return false if validate_move(move, opponent, true, from_cell) # if true, that means the king is exposed
+            rescue => exception
+                next
+            end
         end
+    end
+
+    def check?
+        false
+    end
+
+    def checkmate? # return boolean value, do not set the instance variable
+        false
     end
 
 end

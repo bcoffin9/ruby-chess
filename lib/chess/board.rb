@@ -29,6 +29,8 @@ class Board
             to_cell.piece.alive = false
         end
 
+        # remove pawn's first opener
+        from_cell.piece.moves.shift if from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2])
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
     end
