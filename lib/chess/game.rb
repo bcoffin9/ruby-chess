@@ -14,10 +14,12 @@ class Game
         @check = false
         @en_passant = false
         @board = Board.new
+        @en_passant = nil
     end
 
     public
     def welcome
+        system "clear"
         puts "Welcome to Chess"
         puts "We assume one of you know all the rules of chess"
         puts "To start a new game, enter \"1\""
@@ -50,7 +52,8 @@ class Game
                 puts "CHECK!!" if @check
                 retry
             end
-            @board.make_move(move)
+            @board.make_move(move_string: move, ep: @en_passant)
+            set_en_passant(move) if !@en_passant.nil?
             @check = check?
             checkmate? ? @checkmate = true : switch_player
         end
@@ -93,8 +96,17 @@ class Game
                 break if !BoardNav.on_board?(x, y) # if suggested move is off board
 
                 if !slider # condition for while loop
-                    if !shadow && from_cell.piece.name != "king"
-                        valid_move = true if @board.ranks[y][x] == to_cell && validate_king_safety(from_cell) # holy shiiiit we made it!
+                    if !shadow && (from_cell.piece.name != "king" && from_cell.piece.name != "pawn")
+                        valid_move = true if @board.ranks[y][x] == to_cell && validate_king_safety(from_cell, to_cell) # holy shiiiit we made it!
+                    elsif !shadow && from_cell.piece.name == "pawn"
+                        valid_pawn_move = true if validate_pawn_move(current_cell, x, y, x_shift)
+                        if valid_pawn_move && @board.ranks[y][x] == to_cell && validate_king_safety(from_cell, to_cell)
+                            if y_shift.abs == 2
+                                y_shift == 2 ? ep_shift = -1 : ep_shift = 1
+                                @en_passant = @board.ranks[y+ep_shift][x]
+                            end
+                            valid_move = true 
+                        end
                     elsif from_cell.piece.name == "king"
                         valid_move = true if @board.ranks[y][x] == to_cell && validate_his_own_safety(from_cell, to_cell, user_move)
                     else
@@ -105,7 +117,7 @@ class Game
                 
                 if @board.ranks[y][x] == to_cell # to_cell has been reached
                     if !shadow
-                        valid_move = true if validate_king_safety(from_cell) # does it expose the king?
+                        valid_move = true if validate_king_safety(from_cell, to_cell) # does it expose the king?
                     else
                         valid_move = true # king has been exposed
                     end
@@ -119,6 +131,7 @@ class Game
                 end
 
             end
+            return true if valid_move
         end
 
         if !shadow
@@ -192,29 +205,64 @@ class Game
         @active_player = @active_player == "white" ? "black" : "white"
     end
 
-    def validate_king_safety(from_cell) # false indicates the move is not valid
+    def validate_king_safety(from_cell, to_cell) # false indicates the move is not valid
+        safe_move = true
         from_cell.piece.color == "white" ? opponent = "black" : opponent = "white"
         my_king_cell = @board.ranks.flatten.find { |cell| cell.piece != nil && cell.piece.name == "king" && cell.piece.color == from_cell.piece.color }
+
+        if @check # simulate move to see if it "saves" king
+            temp_piece = to_cell.piece
+            @board.make_move(move_string:"#{from_cell.address} #{to_cell.address}")
+            switch_player
+        end
 
         opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == opponent }
         opponent_cells.each do |cell|
             move = "#{cell.address} #{my_king_cell.address}"
             begin
-                return false if validate_move(move_string: move, player: opponent, shadow: true, shadow_cell: from_cell) # if true, that means the king is exposed
+                if validate_move(move_string: move, player: opponent, shadow: true, shadow_cell: from_cell) # if true, that means the king is exposed
+                    safe_move = false
+                    break
+                end
             rescue => exception
                 next
             end
         end
+
+        if @check
+            @board.make_move(move_string:"#{to_cell.address} #{from_cell.address}", replace_piece: temp_piece)
+            switch_player
+        end
+        return safe_move
+    end
+
+    def validate_pawn_move(from_cell, new_x, new_y, x_shift) # return true for different conditions
+        if x_shift != 0 # making capture move
+            return true if !@board.ranks[new_y][new_x].piece.nil?
+            return true if @board.ranks[new_y][new_x] == @en_passant
+        else # moving straightforward
+            return true if @board.ranks[new_y][new_x].piece.nil?
+        end
+        return false
+    end
+
+    def set_en_passant(move_string) # check to see if move was a not pawn jump
+        parsed_string = move_string.split(" ")
+        from = parsed_string[0]
+        to = parsed_string[1]
+        to_cell = @board.get_cell(to)
+        from_coord = BoardNav.address_to_coord(from)
+        to_coord = BoardNav.address_to_coord(to)
+        @en_passant = nil if !(to_cell.piece.name == "pawn" && ((from_coord[1] - to_coord[1]).abs == 2))
     end
 
     def validate_his_own_safety(from_cell, to_cell, user_move) # when this is called, we are checking an open cell for a king
         # we are going to simulate the move and return the result
         temp_piece = to_cell.piece
-        @board.make_move("#{from_cell.address} #{to_cell.address}")
+        @board.make_move(move_string:"#{from_cell.address} #{to_cell.address}")
         switch_player if user_move
         result = !check?
-        binding.pry
-        @board.make_move("#{to_cell.address} #{from_cell.address}", temp_piece)
+        @board.make_move(move_string:"#{to_cell.address} #{from_cell.address}", replace_piece: temp_piece)
         switch_player if user_move
         return result
     end

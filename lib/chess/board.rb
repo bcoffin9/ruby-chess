@@ -20,8 +20,8 @@ class Board
         setup_board
     end
 
-    def make_move(move, replace_piece=nil)
-        from, to = move.split(" ")
+    def make_move(move_string:, replace_piece: nil, ep: nil)
+        from, to = move_string.split(" ")
         from_cell = get_cell(from)
         to_cell = get_cell(to)
 
@@ -31,6 +31,11 @@ class Board
 
         # remove pawn's first opener
         from_cell.piece.moves.shift if from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2])
+
+        # remove en_passant capture
+        if !ep.nil?
+            en_passant_capture(to_cell) if en_passant_capture?(from_cell, to_cell)
+        end
 
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
@@ -125,6 +130,25 @@ class Board
             result << cell.to_s
         end
         result
+    end
+
+    def en_passant_capture?(from_cell, to_cell)
+        from_coord = BoardNav.address_to_coord(from_cell.address)
+        to_coord = BoardNav.address_to_coord(to_cell.address)
+        binding.pry
+        (from_coord[0] - to_coord[0] != 0 && from_cell.piece.name == "pawn") ? result = true : result = false
+        return result
+    end
+
+    def en_passant_capture(to_cell)
+        to_coord = BoardNav.address_to_coord(to_cell.address)
+        x = to_coord[0]
+        y = to_coord[1]
+        y == 5 ? capture_shift = -1 : capture_shift = 1
+        y += capture_shift
+        binding.pry
+        @ranks[y][x].piece.alive = false
+        @ranks[y][x].piece = nil
     end
 
 end
