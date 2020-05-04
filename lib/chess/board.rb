@@ -20,7 +20,7 @@ class Board
         setup_board
     end
 
-    def make_move(move)
+    def make_move(move, replace_piece=nil)
         from, to = move.split(" ")
         from_cell = get_cell(from)
         to_cell = get_cell(to)
@@ -31,8 +31,15 @@ class Board
 
         # remove pawn's first opener
         from_cell.piece.moves.shift if from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2])
+
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
+
+        binding.pry if !replace_piece.nil?
+        if !replace_piece.nil?
+            replace_piece.alive = true
+            from_cell.piece = replace_piece
+        end
     end
 
     def get_cell(address) #used in validate_move in game class

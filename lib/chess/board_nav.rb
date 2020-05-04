@@ -36,6 +36,39 @@ module BoardNav
         return arr
     end
 
+    def self.coord_to_address(coord)
+        file = coord[0]
+        rank = coord[1]
+        address = ""
+
+        case file
+        when 0
+            address << "a"
+        when 1
+            address << "b"
+        when 2
+            address << "c"
+        when 3
+            address << "d"
+        when 4
+            address << "e"
+        when 5
+            address << "f"
+        when 6
+            address << "g"
+        when 7
+            address << "h"
+        else
+            return ""
+        end
+        
+        if (0..7).include?(rank)
+            return address << (rank + 1).to_s
+        else
+            return ""
+        end
+    end
+
     def self.on_board?(x, y)
         ((0..7).include?(x) && (0..7).include?(y))
     end

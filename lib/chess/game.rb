@@ -41,7 +41,7 @@ class Game
             begin
                 move = gets.chomp.downcase
                 save_game if move == "save"
-                validate_move(move, @active_player)
+                validate_move(move_string: move, player: @active_player, user_move: true)
             rescue => exception
                 system "clear"
                 @board.to_s
@@ -51,18 +51,19 @@ class Game
                 retry
             end
             @board.make_move(move)
-            @check = true if check?
+            @check = check?
             checkmate? ? @checkmate = true : switch_player
         end
-        puts "Congratulations #{@active_player}"
+        system "clear"
         @board.to_s
+        puts "Congratulations #{@active_player}, you've claimed victory!"
     end
 
-    def validate_move(move, player, shadow=false, shadow_cell=nil) # do not make the call to make move
-        raise "that is not a valid move" if move.match(/^[a-h][1-8] [a-h][1-8]$/).nil?
+    def validate_move(move_string:, player:, user_move: false, shadow: false, shadow_cell: nil) # do not make the call to make move
+        raise "that is not a valid move" if move_string.match(/^[a-h][1-8] [a-h][1-8]$/).nil?
         raise "player must be white or black" if !["black", "white"].include?(player)
 
-        parsed_string = move.split(" ")
+        parsed_string = move_string.split(" ")
         from = parsed_string[0]
         to = parsed_string[1]
         from_cell = @board.get_cell(from)
@@ -92,8 +93,10 @@ class Game
                 break if !BoardNav.on_board?(x, y) # if suggested move is off board
 
                 if !slider # condition for while loop
-                    if !shadow
+                    if !shadow && from_cell.piece.name != "king"
                         valid_move = true if @board.ranks[y][x] == to_cell && validate_king_safety(from_cell) # holy shiiiit we made it!
+                    elsif from_cell.piece.name == "king"
+                        valid_move = true if @board.ranks[y][x] == to_cell && validate_his_own_safety(from_cell, to_cell, user_move)
                     else
                         valid_move = true if @board.ranks[y][x] == to_cell
                     end
@@ -122,7 +125,8 @@ class Game
             raise "that piece cannot move to that square" if !valid_move # none of the directions got the to_cell
         else
             return valid_move # return true for validate_king_safety
-        end 
+        end
+        true
     end
 
     def load_game
@@ -188,7 +192,7 @@ class Game
         @active_player = @active_player == "white" ? "black" : "white"
     end
 
-    def validate_king_safety(from_cell) # used to see if move made exposes the king
+    def validate_king_safety(from_cell) # false indicates the move is not valid
         from_cell.piece.color == "white" ? opponent = "black" : opponent = "white"
         my_king_cell = @board.ranks.flatten.find { |cell| cell.piece != nil && cell.piece.name == "king" && cell.piece.color == from_cell.piece.color }
 
@@ -196,11 +200,23 @@ class Game
         opponent_cells.each do |cell|
             move = "#{cell.address} #{my_king_cell.address}"
             begin
-                return false if validate_move(move, opponent, true, from_cell) # if true, that means the king is exposed
+                return false if validate_move(move_string: move, player: opponent, shadow: true, shadow_cell: from_cell) # if true, that means the king is exposed
             rescue => exception
                 next
             end
         end
+    end
+
+    def validate_his_own_safety(from_cell, to_cell, user_move) # when this is called, we are checking an open cell for a king
+        # we are going to simulate the move and return the result
+        temp_piece = to_cell.piece
+        @board.make_move("#{from_cell.address} #{to_cell.address}")
+        switch_player if user_move
+        result = !check?
+        binding.pry
+        @board.make_move("#{to_cell.address} #{from_cell.address}", temp_piece)
+        switch_player if user_move
+        return result
     end
 
     def check? # return boolean value, do not set the instance variable
@@ -210,7 +226,7 @@ class Game
         my_cells.each do |cell|
             move = "#{cell.address} #{opponent_king_cell.address}"
             begin
-                return true if validate_move(move, @active_player, true)
+                return true if validate_move(move_string: move, player: @active_player, shadow: true)
             rescue => exception
                 next
             end
@@ -220,7 +236,53 @@ class Game
     end
 
     def checkmate? # return boolean value, do not set the instance variable
-        false
+        @active_player == "white" ? opponent = "black" : opponent = "white"
+        opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil &&  cell.piece.color == opponent }
+        
+        opponent_cells.each do |cell|
+            return false if get_available_moves(cell).length > 0
+        end
+
+        true
+    end
+
+    def get_available_moves(cell)
+        moves = []
+        slider = cell.piece.slider
+
+        cell.piece.moves.each do |move|
+            x, y = BoardNav.address_to_coord(cell.address)
+            x_shift, y_shift = move
+
+            loop do # do..while loop
+                x += x_shift
+                y += y_shift
+
+                break if !BoardNav.on_board?(x, y) # if proposed move is off board
+
+                to_cell_address = BoardNav.coord_to_address([x,y])
+                proposed_move = "#{cell.address} #{to_cell_address}"
+                if !slider # condition for while loop
+                    begin
+                        moves << proposed_move if validate_move(move_string: proposed_move, player: cell.piece.color)
+                    rescue => exception
+                        break
+                    ensure
+                        break
+                    end
+                end
+
+                begin
+                    moves << proposed_move if validate_move(move_string: proposed_move, player: cell.piece.color)
+                rescue => exception
+                    break
+                ensure
+                    break
+                end
+            end
+        end
+        
+        return moves
     end
 
 end

@@ -17,6 +17,21 @@ RSpec.describe BoardNav do
         end
     end
 
+    context "#coord_to_address" do
+        
+        it "returns empty string when file is out of bounds" do
+            expect(BoardNav.coord_to_address([-1,0])).to eq ""
+        end
+
+        it "returns empty string when file is out of bounds" do
+            expect(BoardNav.coord_to_address([4,9])).to eq ""
+        end
+
+        it "returns g3 when given [6,2]" do
+            expect(BoardNav.coord_to_address([6,2])).to eq "g3"
+        end
+    end
+
     context "#on_board?" do
         
         it "returns false when x is out of bounds" do
