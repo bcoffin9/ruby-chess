@@ -72,5 +72,9 @@ module BoardNav
     def self.on_board?(x, y)
         ((0..7).include?(x) && (0..7).include?(y))
     end
+
+    def self.edge_rank?(address)
+        return [0,7].include?(self.address_to_coord(address)[1])
+    end
     
 end

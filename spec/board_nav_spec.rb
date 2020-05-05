@@ -46,4 +46,20 @@ RSpec.describe BoardNav do
             expect(BoardNav.on_board?(2,3)).to eq true
         end
     end
+
+    context "#edge_rank?" do
+        
+        it "returns false when on any rank 2-7" do
+            expect(BoardNav.edge_rank?("h3")).to eq false
+        end
+
+        it "returns true when on 1st rank" do
+            expect(BoardNav.edge_rank?("e1")).to eq true
+        end
+
+        it "returns true when on 8th rank" do
+            expect(BoardNav.edge_rank?("a8")).to eq true
+        end
+
+    end
 end

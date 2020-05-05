@@ -20,18 +20,17 @@ class Board
         setup_board
     end
 
-    def make_move(move_string:, replace_piece: nil, ep: nil)
+    def make_move(move_string:, replace_piece: nil, pre_replace_piece: false, ep: nil)
         from, to = move_string.split(" ")
         from_cell = get_cell(from)
         to_cell = get_cell(to)
 
-        if !to_cell.piece.nil? # generate kill list
-            to_cell.piece.alive = false
-        end
-
-        if replace_piece.nil? # manage special moves
+        if replace_piece.nil? # this is not a simulated move if true
             # remove pawn's first opener
-            from_cell.piece.moves.shift if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
+            binding.pry if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
+            if !pre_replace_piece
+                from_cell.piece.moves.shift if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
+            end
 
             # switch rooks castle boolean
             from_cell.piece.castle = false if from_cell.piece.name == "rook" && from_cell.piece.castle
@@ -43,6 +42,10 @@ class Board
                 to_coord = BoardNav.address_to_coord(to_cell.address)
                 move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
             end
+
+            if !to_cell.piece.nil? # switch captured piece's boolean
+                to_cell.piece.alive = false
+            end
         end
 
         # remove en_passant capture
@@ -52,6 +55,9 @@ class Board
 
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
+
+        # promotion
+        promote_pawn(to_cell) if to_cell.piece.name == "pawn" && BoardNav.edge_rank?(to_cell.address)
 
         if !replace_piece.nil? && replace_piece != "validate_castle"
             replace_piece.alive = true
@@ -183,4 +189,38 @@ class Board
         rook_from_cell.piece = nil
         rook_to_cell.piece.castle = false
     end
+
+    def promote_pawn(pawn_cell)
+        color = pawn_cell.piece.color
+        system "clear"
+        self.to_s
+        puts "What a big day for one of #{color}'s pawns"
+        puts "He's getting promoted!!"
+        puts "Choose a replacement"
+        puts "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
+        begin
+            promotion = gets.chomp.downcase
+            raise "That isn't an option" if promotion.match(/^[rnbq]$/).nil?
+        rescue => exception
+            system "clear"
+            self.to_s
+            puts "Try again"
+            puts "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
+            retry
+        end
+        pawn_cell.piece = nil
+        case promotion
+        when "r"
+            pawn_cell.piece = Rook.new(color, false)
+        when "n"
+            pawn_cell.piece = Knight.new(color)
+        when "b"
+            pawn_cell.piece = Bishop.new(color)
+        when "q"
+            pawn_cell.piece = Queen.new(color)
+        else
+            pawn_cell.piece = Queen.new(color)
+        end
+    end
+        
 end

@@ -2,7 +2,7 @@ require_relative "piece.rb"
 
 class Rook < Piece
     attr_accessor :castle
-    def initialize(color)
+    def initialize(color, castle=true)
         img = color == "white" ? "\u2656" : "\u265c"
         moves = [
             [0,1],  # x y
@@ -11,7 +11,7 @@ class Rook < Piece
             [-1,0]
         ]
         super(color, img, "rook", moves, true)
-        @castle = true
+        @castle = castle
     end
 
 end

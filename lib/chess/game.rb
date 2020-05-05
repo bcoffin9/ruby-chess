@@ -218,7 +218,7 @@ class Game
 
         if @check # simulate move to see if it "saves" king
             temp_piece = to_cell.piece
-            @board.make_move(move_string:"#{from_cell.address} #{to_cell.address}")
+            @board.make_move(move_string:"#{from_cell.address} #{to_cell.address}", pre_replace_piece: true)
             switch_player
         end
 
