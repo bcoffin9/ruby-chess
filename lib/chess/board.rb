@@ -25,12 +25,25 @@ class Board
         from_cell = get_cell(from)
         to_cell = get_cell(to)
 
-        if !to_cell.piece.nil?
+        if !to_cell.piece.nil? # generate kill list
             to_cell.piece.alive = false
         end
 
-        # remove pawn's first opener
-        from_cell.piece.moves.shift if from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2])
+        if replace_piece.nil? # manage special moves
+            # remove pawn's first opener
+            from_cell.piece.moves.shift if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
+
+            # switch rooks castle boolean
+            from_cell.piece.castle = false if from_cell.piece.name == "rook" && from_cell.piece.castle
+
+            # remove king's castle moves if he moves and move rook if needed
+            if from_cell.piece.name == "king" && (from_cell.piece.moves.include?([2,0]) || from_cell.piece.moves.include?([-2,0]))
+                2.times { from_cell.piece.moves.shift }
+                from_coord = BoardNav.address_to_coord(from_cell.address)
+                to_coord = BoardNav.address_to_coord(to_cell.address)
+                move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
+            end
+        end
 
         # remove en_passant capture
         if !ep.nil?
@@ -40,8 +53,7 @@ class Board
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
 
-        binding.pry if !replace_piece.nil?
-        if !replace_piece.nil?
+        if !replace_piece.nil? && replace_piece != "validate_castle"
             replace_piece.alive = true
             from_cell.piece = replace_piece
         end
@@ -135,7 +147,6 @@ class Board
     def en_passant_capture?(from_cell, to_cell)
         from_coord = BoardNav.address_to_coord(from_cell.address)
         to_coord = BoardNav.address_to_coord(to_cell.address)
-        binding.pry
         (from_coord[0] - to_coord[0] != 0 && from_cell.piece.name == "pawn") ? result = true : result = false
         return result
     end
@@ -146,9 +157,30 @@ class Board
         y = to_coord[1]
         y == 5 ? capture_shift = -1 : capture_shift = 1
         y += capture_shift
-        binding.pry
         @ranks[y][x].piece.alive = false
         @ranks[y][x].piece = nil
     end
 
+    def move_castle_rook(from_cell, to_cell)
+        from_cell.address.split("").first < to_cell.address.split("").first ? rook_to_address = "f" : rook_to_address = "d"
+        from_cell.piece.color == "white" ? rook_to_address << "1" : rook_to_address << "8"
+        case rook_to_address
+        when "d1"
+            rook_from_address = "a1"
+        when "f1"
+            rook_from_address = "h1"
+        when "d8"
+            rook_from_address = "a8"
+        when "f8"
+            rook_from_address = "h8"
+        else
+            rook_from_address = nil
+        end
+
+        rook_from_cell = get_cell(rook_from_address)
+        rook_to_cell = get_cell(rook_to_address)
+        rook_to_cell.piece = rook_from_cell.piece
+        rook_from_cell.piece = nil
+        rook_to_cell.piece.castle = false
+    end
 end

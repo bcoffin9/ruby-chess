@@ -107,9 +107,15 @@ class Game
                             end
                             valid_move = true 
                         end
-                    elsif from_cell.piece.name == "king"
-                        valid_move = true if @board.ranks[y][x] == to_cell && validate_his_own_safety(from_cell, to_cell, user_move)
-                    else
+                    elsif from_cell.piece.name == "king" # for a king move
+                        if x_shift.abs == 2 && !@check # the king is not in check and wants to castle
+                            valid_move = true if @board.ranks[y][x] == to_cell && validate_castle(x_shift, from_cell)
+                        elsif x_shift.abs < 2
+                            valid_move = true if @board.ranks[y][x] == to_cell && validate_his_own_safety(from_cell, to_cell, user_move)
+                        else
+                            # the king is in check and cannot castle
+                        end
+                    else # for validate_king_safety
                         valid_move = true if @board.ranks[y][x] == to_cell
                     end
                     break
@@ -242,6 +248,35 @@ class Game
             return true if @board.ranks[new_y][new_x] == @en_passant
         else # moving straightforward
             return true if @board.ranks[new_y][new_x].piece.nil?
+        end
+        return false
+    end
+
+    def validate_castle(direction, from_cell) # return true if move is good
+        #check for rook
+        direction < 0 ? rook_address = "a" : rook_address = "h"
+        direction < 0 ? step = -1 : step = 1
+        from_cell.piece.color == "white" ? rook_address << "1" : rook_address << "8"
+        rook_cell = @board.get_cell(rook_address)
+        if rook_cell.piece.name == "rook" && rook_cell.piece.castle
+            # check moves through to the cell
+            2.times do |num|
+                from_coord = BoardNav.address_to_coord(from_cell.address)
+                x = from_coord[0]
+                y = from_coord[1]
+                num += 1
+                step *= num
+                x += step
+                return false if !@board.ranks[y][x].piece.nil?
+                to_address = BoardNav.coord_to_address([x, y])
+                @board.make_move(move_string: "#{from_cell.address} #{to_address}", replace_piece: "validate_castle")
+                switch_player
+                is_check = check?
+                switch_player
+                @board.make_move(move_string: "#{to_address} #{from_cell.address}", replace_piece: "validate_castle")
+                return false if is_check
+            end
+            return true
         end
         return false
     end

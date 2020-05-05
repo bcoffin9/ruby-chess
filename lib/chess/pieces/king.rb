@@ -6,6 +6,8 @@ class King < Piece
     def initialize(color)
         img = color == "white" ? "\u2654" : "\u265a"
         moves = [
+            [2,0],   # castling
+            [-2,0],
             [0,1],   # up
             [1,1],   # up and right
             [1,0],   # right
@@ -13,9 +15,7 @@ class King < Piece
             [0,-1],  # down
             [-1,-1], # down and left
             [-1,0],  # left
-            [-1,1],   # up and left
-            [2,0],   # castling
-            [2,0]
+            [-1,1]    # up and left
         ]
         super(color, img, "king", moves, false)
         @castling = true
