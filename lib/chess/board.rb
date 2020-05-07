@@ -6,6 +6,7 @@ require_relative './pieces/queen.rb'
 require_relative './pieces/rook.rb'
 require_relative "./cell.rb"
 require_relative "./board_nav.rb"
+require "colorize"
 
 class Board
     FILES = (" a ".." h ").to_a
@@ -13,12 +14,14 @@ class Board
     WIDTH = 50
     PAD = "   "
 
-    attr_accessor :ranks
+    attr_accessor :ranks, :black_gy, :white_gy
 
     include BoardNav
 
     def initialize
         @ranks = Array.new(8) { Array.new(8) { ChessCell.new } }
+        @white_gy = []
+        @black_gy = []
         setup_board
     end
 
@@ -42,8 +45,8 @@ class Board
             move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
         end
 
-        if !to_cell.piece.nil? # switch captured piece's boolean
-            to_cell.piece.alive = false
+        if !to_cell.piece.nil? # add to graveyard
+            add_to_graveyard(to_cell.piece)
         end
 
         if !ep.nil? # remove en_passant capture
@@ -63,13 +66,6 @@ class Board
         from_cell = get_cell(from)
         to_cell = get_cell(to)
 
-        # move rook if needed for castling
-        # if from_cell.piece.name == "king" 
-        #    from_coord = BoardNav.address_to_coord(from_cell.address)
-        #    to_coord = BoardNav.address_to_coord(to_cell.address)
-        #    move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
-        # end
-
         to_cell.piece = from_cell.piece
         from_cell.piece = nil
 
@@ -87,24 +83,6 @@ class Board
             from_cell.piece = replace_piece if !replace_piece.nil?
             return
         end
-=begin
-        if !rook_cell.nil?
-            case rook_cell.address
-            when "d1"
-                home_address = "a1"
-            when "f1"
-                home_address = "h1"
-            when "d8"
-                home_address = "a8"
-            when "f8"
-                home_address = "h8"
-            end
-            binding.pry
-            home_cell = get_cell(home_address)
-            home_cell.piece = rook_cell.piece
-            binding.pry
-        end
-=end
 
         to_cell.piece = from_cell.piece
         from_cell.piece = replace_piece
@@ -115,14 +93,15 @@ class Board
     end
 
     def to_s # can just use puts board now
-        puts PAD + "save by typing \"save\""
-        puts "  " + FILES.join("") + "  "
+        puts PAD + "save by typing \"save\"" + PAD + PAD + PAD + "Graveyard".center(16)
+        puts PAD + FILES.join("") + PAD + PAD + "White".center(8) + "Black".center(8)
         8.times do |idx|
-            idx = 8 - 1 - idx
-            line = "#{RANKS[idx]} " + print_rank(@ranks[idx]) + " #{RANKS[idx]}"
-            puts line.center(WIDTH)
+            rk = 8 - 1 - idx
+            gy_row = idx * 2
+            line = " #{RANKS[rk]} " + print_rank(@ranks[rk]) + " #{RANKS[rk]} " + PAD + generate_gy_string(gy_row)
+            puts line
         end
-        puts "  " + FILES.join("") + "  "
+        puts PAD + FILES.join("") + PAD
     end
 
     private
@@ -139,6 +118,21 @@ class Board
         set_seventh_rank
         set_eighth_rank
     end
+
+    def add_to_graveyard(piece)
+        piece.alive = false
+        piece.color == "white" ? @white_gy << piece.gy_img : @black_gy << piece.gy_img
+    end
+
+    def generate_gy_string(row)
+        empty = "    "
+        !@white_gy[row].nil? ? w1_piece = @white_gy[row] : w1_piece = empty.on_white
+        !@white_gy[row+1].nil? ? w2_piece = @white_gy[row+1] : w2_piece = empty.on_white
+        !@black_gy[row].nil? ? b1_piece = @black_gy[row] : b1_piece = empty.on_white
+        !@black_gy[row+1].nil? ? b2_piece = @black_gy[row+1] : b2_piece = empty.on_white
+        return "#{w1_piece}#{w2_piece}#{b1_piece}#{b2_piece}"
+    end
+
 
     def get_color(rank, file) #used in board generation
         if rank + file == 0
@@ -212,6 +206,7 @@ class Board
         y == 5 ? capture_shift = -1 : capture_shift = 1
         y += capture_shift
         @ranks[y][x].piece.alive = false unless @ranks[y][x].piece.nil?
+
         @ranks[y][x].piece = nil
     end
 

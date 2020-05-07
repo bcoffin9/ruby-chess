@@ -14,6 +14,7 @@ class Game
     def initialize
         @active_player = "white"
         @checkmate = false
+        @stalemate = false
         @check = false
         @board = Board.new
         @en_passant = nil
@@ -32,11 +33,11 @@ class Game
     end
 
     def play
-        while !@checkmate
+        while !@checkmate && !@stalemate
             system "clear"
             @board.to_s
             puts PAD + "#{active_player}'s move"
-            puts PAD + "Ex: \"b1 c3\" - move the piece at b1 to c3" unless @check
+            puts PAD + "Ex: \"b1 c3\" \n   move the piece at b1 to c3" unless @check
             puts PAD + "CHECK!!".white.on_red if @check
             begin
                 move = gets.chomp.downcase
@@ -54,15 +55,18 @@ class Game
             @board.make_move(move_string: move, ep: @en_passant)
             set_en_passant(move)
             @check = check?
+            @stalemate = stalemate?
             checkmate? ? @checkmate = true : switch_player
         end
         system "clear"
         @board.to_s
-        puts PAD + "Congratulations #{@active_player}, you've claimed victory!".white.on_green
+        puts PAD + "Congratulations #{@active_player}, you've claimed victory!".white.on_green if @checkmate
+        puts PAD + "The game is a Draw".white.on_blue if @stalemate
     end
 
     def debug
         binding.pry
+        self
     end
 
     def validate_move(move_string:) # do not make the call to make move
@@ -247,7 +251,7 @@ class Game
         to_cell = @board.get_cell(to)
         from_coord = BoardNav.address_to_coord(from)
         to_coord = BoardNav.address_to_coord(to)
-        if to_cell.piece.name == "pawn" && from_coord[1] - to_coord[1].abs == 2
+        if to_cell.piece.name == "pawn" && (from_coord[1] - to_coord[1]).abs == 2
             jump = (-1 * (from_coord[1] - to_coord[1]))/2
             y = to_coord[1] - jump
             x = to_coord[0]
@@ -271,7 +275,7 @@ class Game
     def checkmate? # return boolean value, do not set the instance variable
         @active_player == "white" ? opponent = "black" : opponent = "white"
         switch_player
-        opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil &&  cell.piece.color == opponent }
+        opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == opponent }
         mate = true
         opponent_cells.each do |cell|
             if !get_available_moves(cell).empty?
@@ -280,7 +284,23 @@ class Game
             end
         end
         switch_player
-        return mate
+        return mate && @check
+    end
+
+    def stalemate? # only when player has no legal moves and is not in check
+        @active_player == "white" ? opponent = "black" : opponent = "white"
+        switch_player
+        opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == opponent }
+        stale = true
+        opponent_cells.each do |cell|
+            if !get_available_moves(cell).empty?
+                stale = false
+                break
+            end
+        end
+        switch_player
+        return stale && !@check
+
     end
 
     def capture_move_list(cell)
