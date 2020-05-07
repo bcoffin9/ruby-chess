@@ -41,6 +41,7 @@ class Game
             begin
                 move = gets.chomp.downcase
                 save_game if move == "save"
+                debug if move == "dbg"
                 validate_move(move_string: move)
             rescue => exception
                 system "clear"
@@ -58,6 +59,10 @@ class Game
         system "clear"
         @board.to_s
         puts PAD + "Congratulations #{@active_player}, you've claimed victory!".white.on_green
+    end
+
+    def debug
+        binding.pry
     end
 
     def validate_move(move_string:) # do not make the call to make move
@@ -199,7 +204,6 @@ class Game
 
     def validate_pawn_move(from_cell, new_x, new_y, x_shift, y_shift) # return true for different conditions
         if x_shift.abs == 1 # making capture move
-            # binding.pry
             return true if !@board.ranks[new_y][new_x].piece.nil?
             return true if @board.ranks[new_y][new_x] == @en_passant
         elsif [-2,-1,1,2].include?(y_shift) # moving straightforward
@@ -228,7 +232,6 @@ class Game
                 @board.make_sim_move(move_string: "#{from_cell.address} #{to_address}", ep: @en_passant)
                 switch_player
                 is_check = check?
-                # binding.pry
                 switch_player
                 @board.reset_sim_move(move_string: "#{to_address} #{from_cell.address}", replace_piece:nil)
                 return false if is_check
@@ -249,7 +252,6 @@ class Game
             y = to_coord[1] - jump
             x = to_coord[0]
             @en_passant = @board.ranks[y][x]
-            binding.pry
         else
             @en_passant = nil
         end
@@ -268,13 +270,17 @@ class Game
 
     def checkmate? # return boolean value, do not set the instance variable
         @active_player == "white" ? opponent = "black" : opponent = "white"
+        switch_player
         opponent_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil &&  cell.piece.color == opponent }
-        
+        mate = true
         opponent_cells.each do |cell|
-            return !get_available_moves(cell).empty?
+            if !get_available_moves(cell).empty?
+                mate = false
+                break
+            end
         end
-
-        true
+        switch_player
+        return mate
     end
 
     def capture_move_list(cell)
@@ -337,7 +343,7 @@ class Game
                 rescue => exception
                     break
                 end
-                break if !@board.ranks[y][x].piece.nil && @board.ranks[y][x].piece.color == cell.piece.color
+                break if !@board.ranks[y][x].piece.nil? && @board.ranks[y][x].piece.color == cell.piece.color
             end
         end
         
