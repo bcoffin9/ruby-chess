@@ -131,27 +131,37 @@ class Game
 
     def load_game
         system "clear"
-        puts PAD + "Choose a game to load:"
+        puts PAD + "Please select a file by its corresponding number"
         if Dir.empty?("saved_games")
             abort "No saved games"
         else
             saved_games = Dir.open("saved_games")
             names = []
+            index = 1
             saved_games.each_child do |game|
-                puts PAD + game
+                puts PAD + "[#{index}]" + PAD + game
                 names << game
+                index += 1
             end
         end
-
-        choice = gets.chomp
+        
         begin
-            raise "Please select a file, using the exact text you see" if names.find_index(choice) == nil
-        rescue => exception
-            puts PAD + exception.message
-            choice = gets.chomp
+            choice = Integer(gets.chomp)
+            raise if !Integer(choice) || names[choice-1] == nil || choice < 1
+        rescue => message
+            system "clear"
+            puts PAD + "Please select a file by its corresponding number"
+            names = []
+            index = 1
+            saved_games.each_child do |game|
+                puts PAD + "[#{index}]" + PAD + game
+                names << game
+                index += 1
+            end
+            puts PAD + "We didn't quite get that, please try again:"
             retry
         end
-        marshal_game = File.open("saved_games/#{choice}","r")
+        marshal_game = File.open("saved_games/#{names[choice-1]}","r")
         game_inception = Marshal.load(marshal_game)
         game_inception.play
     end
