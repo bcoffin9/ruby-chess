@@ -1,161 +1,0 @@
-o:	Game:@active_playerI"
-white:ET:@checkmateF:@boardo:
-Board:@ranks[[o:ChessCell:@pieceo:	Rook
-:@colorI"
-white;T:	@imgI"
- ♖ ;T:
-@nameI"	rook;T:@aliveT:@castlingT;I"
-green;T:@addressI"	 a 1;To;;o:Knight
-;I"
-white;T;I"
- ♘ ;T;I"knight;T;T;T;I"
-white;T;I"	 b 1;To;;o:Bishop	;I"
-white;T;I"
- ♗ ;T;I"bishop;T;T;I"
-green;T;I"	 c 1;To;;o:
-Queen	;I"
-white;T;I"
- ♕ ;T;I"
-queen;T;T;I"
-white;T;I"	 d 1;To;;o:	King
-;I"
-white;T;I"
- ♔ ;T;I"	king;T;T;T;I"
-green;T;I"	 e 1;To;;o;	;I"
-white;T;I"
- ♗ ;T;I"bishop;T;T;I"
-white;T;I"	 f 1;To;;o;
-;I"
-white;T;I"
- ♘ ;T;I"knight;T;T;T;I"
-green;T;I"	 g 1;To;;o;
-;I"
-white;T;I"
- ♖ ;T;I"	rook;T;T;T;I"
-white;T;I"	 h 1;T[o;;o:	Pawn
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T:@en_passantT;I"
-white;T;I"	 a 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 b 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 c 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 d 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 e 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 f 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 g 2;To;;o;
-;I"
-white;T;I"
- ♙ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 h 2;T[o;;0;I"
-green;T;I"	 a 3;To;;0;I"
-white;T;I"	 b 3;To;;0;I"
-green;T;I"	 c 3;To;;0;I"
-white;T;I"	 d 3;To;;0;I"
-green;T;I"	 e 3;To;;0;I"
-white;T;I"	 f 3;To;;0;I"
-green;T;I"	 g 3;To;;0;I"
-white;T;I"	 h 3;T[o;;0;I"
-white;T;I"	 a 4;To;;0;I"
-green;T;I"	 b 4;To;;0;I"
-white;T;I"	 c 4;To;;0;I"
-green;T;I"	 d 4;To;;0;I"
-white;T;I"	 e 4;To;;0;I"
-green;T;I"	 f 4;To;;0;I"
-white;T;I"	 g 4;To;;0;I"
-green;T;I"	 h 4;T[o;;0;I"
-green;T;I"	 a 5;To;;0;I"
-white;T;I"	 b 5;To;;0;I"
-green;T;I"	 c 5;To;;0;I"
-white;T;I"	 d 5;To;;0;I"
-green;T;I"	 e 5;To;;0;I"
-white;T;I"	 f 5;To;;0;I"
-green;T;I"	 g 5;To;;0;I"
-white;T;I"	 h 5;T[o;;0;I"
-white;T;I"	 a 6;To;;0;I"
-green;T;I"	 b 6;To;;0;I"
-white;T;I"	 c 6;To;;0;I"
-green;T;I"	 d 6;To;;0;I"
-white;T;I"	 e 6;To;;0;I"
-green;T;I"	 f 6;To;;0;I"
-white;T;I"	 g 6;To;;0;I"
-green;T;I"	 h 6;T[o;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 a 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 b 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 c 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 d 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 e 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 f 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-green;T;I"	 g 7;To;;o;
-;I"
-black;T;I"
- ♟ ;T;I"	pawn;T;T;T;I"
-white;T;I"	 h 7;T[o;;o;
-;I"
-black;T;I"
- ♜ ;T;I"	rook;T;T;T;I"
-white;T;I"	 a 8;To;;o;
-;I"
-black;T;I"
- ♞ ;T;I"knight;T;T;T;I"
-green;T;I"	 b 8;To;;o;	;I"
-black;T;I"
- ♝ ;T;I"bishop;T;T;I"
-white;T;I"	 c 8;To;;o;	;I"
-black;T;I"
- ♛ ;T;I"
-queen;T;T;I"
-green;T;I"	 d 8;To;;o;
-;I"
-black;T;I"
- ♚ ;T;I"	king;T;T;T;I"
-white;T;I"	 e 8;To;;o;	;I"
-black;T;I"
- ♝ ;T;I"bishop;T;T;I"
-green;T;I"	 f 8;To;;o;
-;I"
-black;T;I"
- ♞ ;T;I"knight;T;T;T;I"
-white;T;I"	 g 8;To;;o;
-;I"
-black;T;I"
- ♜ ;T;I"	rook;T;T;T;I"
-green;T;I"	 h 8;T

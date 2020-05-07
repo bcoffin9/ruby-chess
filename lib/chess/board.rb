@@ -10,6 +10,8 @@ require_relative "./board_nav.rb"
 class Board
     FILES = (" a ".." h ").to_a
     RANKS = ("1".."8").to_a
+    WIDTH = 50
+    PAD = "   "
 
     attr_accessor :ranks
 
@@ -20,36 +22,31 @@ class Board
         setup_board
     end
 
-    def make_move(move_string:, replace_piece: nil, pre_replace_piece: false, ep: nil)
+    def make_move(move_string:, ep:)
         from, to = move_string.split(" ")
         from_cell = get_cell(from)
         to_cell = get_cell(to)
 
-        if replace_piece.nil? # this is not a simulated move if true
-            # remove pawn's first opener
-            binding.pry if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
-            if !pre_replace_piece
-                from_cell.piece.moves.shift if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
-            end
+        # remove pawn's first opener    
+        from_cell.piece.moves.shift if from_cell.piece.name == "pawn" && (from_cell.piece.moves.include?([0,2]) || from_cell.piece.moves.include?([0,-2]))
+            
 
-            # switch rooks castle boolean
-            from_cell.piece.castle = false if from_cell.piece.name == "rook" && from_cell.piece.castle
+        # switch rooks castle boolean
+        from_cell.piece.castle = false if from_cell.piece.name == "rook" && from_cell.piece.castle
 
-            # remove king's castle moves if he moves and move rook if needed
-            if from_cell.piece.name == "king" && (from_cell.piece.moves.include?([2,0]) || from_cell.piece.moves.include?([-2,0]))
-                2.times { from_cell.piece.moves.shift }
-                from_coord = BoardNav.address_to_coord(from_cell.address)
-                to_coord = BoardNav.address_to_coord(to_cell.address)
-                move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
-            end
-
-            if !to_cell.piece.nil? # switch captured piece's boolean
-                to_cell.piece.alive = false
-            end
+        # remove king's castle moves if he moves and move rook if needed
+        if from_cell.piece.name == "king" && (from_cell.piece.moves.include?([2,0]) || from_cell.piece.moves.include?([-2,0]))
+            2.times { from_cell.piece.moves.shift }
+            from_coord = BoardNav.address_to_coord(from_cell.address)
+            to_coord = BoardNav.address_to_coord(to_cell.address)
+            move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
         end
 
-        # remove en_passant capture
-        if !ep.nil?
+        if !to_cell.piece.nil? # switch captured piece's boolean
+            to_cell.piece.alive = false
+        end
+
+        if !ep.nil? # remove en_passant capture
             en_passant_capture(to_cell) if en_passant_capture?(from_cell, to_cell)
         end
 
@@ -59,10 +56,58 @@ class Board
         # promotion
         promote_pawn(to_cell) if to_cell.piece.name == "pawn" && BoardNav.edge_rank?(to_cell.address)
 
-        if !replace_piece.nil? && replace_piece != "validate_castle"
-            replace_piece.alive = true
-            from_cell.piece = replace_piece
+    end
+
+    def make_sim_move(move_string:, ep:)
+        from, to = move_string.split(" ")
+        from_cell = get_cell(from)
+        to_cell = get_cell(to)
+
+        # move rook if needed for castling
+        # if from_cell.piece.name == "king" 
+        #    from_coord = BoardNav.address_to_coord(from_cell.address)
+        #    to_coord = BoardNav.address_to_coord(to_cell.address)
+        #    move_castle_rook(from_cell, to_cell) if (from_coord[0] - to_coord[0]).abs == 2
+        # end
+
+        to_cell.piece = from_cell.piece
+        from_cell.piece = nil
+
+        # promotion
+        sim_promote_pawn(to_cell) if to_cell.piece.name == "pawn" && BoardNav.edge_rank?(to_cell.address)
+    end
+
+    def reset_sim_move(move_string:, replace_piece:, pawn:nil, rook_cell:nil)
+        from, to = move_string.split(" ")
+        from_cell = get_cell(from)
+        to_cell = get_cell(to)
+        if !pawn.nil?
+            from_cell.piece = nil
+            to_cell.piece = pawn
+            from_cell.piece = replace_piece if !replace_piece.nil?
+            return
         end
+=begin
+        if !rook_cell.nil?
+            case rook_cell.address
+            when "d1"
+                home_address = "a1"
+            when "f1"
+                home_address = "h1"
+            when "d8"
+                home_address = "a8"
+            when "f8"
+                home_address = "h8"
+            end
+            binding.pry
+            home_cell = get_cell(home_address)
+            home_cell.piece = rook_cell.piece
+            binding.pry
+        end
+=end
+
+        to_cell.piece = from_cell.piece
+        from_cell.piece = replace_piece
     end
 
     def get_cell(address) #used in validate_move in game class
@@ -70,11 +115,12 @@ class Board
     end
 
     def to_s # can just use puts board now
-        puts "save anytime by typing \"save\""
+        puts PAD + "save by typing \"save\""
         puts "  " + FILES.join("") + "  "
         8.times do |idx|
             idx = 8 - 1 - idx
-            puts "#{RANKS[idx]} " + print_rank(@ranks[idx]) + " #{RANKS[idx]}"
+            line = "#{RANKS[idx]} " + print_rank(@ranks[idx]) + " #{RANKS[idx]}"
+            puts line.center(WIDTH)
         end
         puts "  " + FILES.join("") + "  "
     end
@@ -153,8 +199,10 @@ class Board
     def en_passant_capture?(from_cell, to_cell)
         from_coord = BoardNav.address_to_coord(from_cell.address)
         to_coord = BoardNav.address_to_coord(to_cell.address)
-        (from_coord[0] - to_coord[0] != 0 && from_cell.piece.name == "pawn") ? result = true : result = false
-        return result
+        shift = -1 * (from_coord[0] - to_coord[0])
+        x = from_coord[0] + shift
+        y = from_coord[1]
+        return shift != 0 && from_cell.piece.name == "pawn" && @ranks[y][x].piece!= nil && @ranks[y][x].piece.name == "pawn" && @ranks[y][x].piece.color != from_cell.piece.color
     end
 
     def en_passant_capture(to_cell)
@@ -163,7 +211,7 @@ class Board
         y = to_coord[1]
         y == 5 ? capture_shift = -1 : capture_shift = 1
         y += capture_shift
-        @ranks[y][x].piece.alive = false
+        @ranks[y][x].piece.alive = false unless @ranks[y][x].piece.nil?
         @ranks[y][x].piece = nil
     end
 
@@ -194,18 +242,18 @@ class Board
         color = pawn_cell.piece.color
         system "clear"
         self.to_s
-        puts "What a big day for one of #{color}'s pawns"
-        puts "He's getting promoted!!"
-        puts "Choose a replacement"
-        puts "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
+        puts PAD + "What a big day for one of #{color}'s pawns"
+        puts PAD + "He's getting promoted!!"
+        puts PAD + "Choose a replacement"
+        puts PAD + "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
         begin
             promotion = gets.chomp.downcase
             raise "That isn't an option" if promotion.match(/^[rnbq]$/).nil?
         rescue => exception
             system "clear"
             self.to_s
-            puts "Try again"
-            puts "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
+            puts PAD + "Try again"
+            puts PAD + "\"r\" - Rook, \"n\" - kNight, \"b\" - Bishop, \"q\" - Queen"
             retry
         end
         pawn_cell.piece = nil
@@ -221,6 +269,12 @@ class Board
         else
             pawn_cell.piece = Queen.new(color)
         end
+    end
+
+    def sim_promote_pawn(pawn_cell)
+        color = pawn_cell.piece.color
+        pawn_cell.piece = nil
+        pawn_cell.piece = Queen.new(color)
     end
         
 end
