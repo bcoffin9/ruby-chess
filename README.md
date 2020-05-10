@@ -1,6 +1,10 @@
 # Chess
 
 Full functionality of chess implemented on MRI (Matz' Ruby Interpreter). Project for The Odin Project: Ruby.
+To test the game using rspec, clone this repo, navigate into the project folder, then run rspec.
+To play the game, run ruby lib/example/example.rb
+
+Cheers!
 
 ## Installation
 
