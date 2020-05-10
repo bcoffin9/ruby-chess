@@ -6,7 +6,17 @@ require "colorize"
 class Game
     WIDTH = 60
     PAD = "   "
-    attr_reader :players
+    PRESIDENTS = [
+        "William Clinton",
+        "Abraham Lincoln",
+        "Jimmy Carter",
+        "Thomas Jefferson",
+        "John Adams",
+        "James Monroe",
+        "Barack Obama",
+        "Theodore Roosevelt"
+    ]
+    attr_reader :prez_name
     attr_accessor :checkmate, :active_player, :board, :check
 
     include BoardNav
@@ -18,6 +28,9 @@ class Game
         @check = false
         @board = Board.new
         @en_passant = nil
+        @active_player_type = nil
+        @prez_name = get_CPU
+        @last_move = nil
     end
 
     public
@@ -25,35 +38,35 @@ class Game
         system "clear"
         puts "Welcome to Chess!".center(WIDTH)
         puts ""
-        puts (PAD + "Start a new game".ljust(30) + "-> Enter \"1\"").center(WIDTH)
-        puts (PAD + "To continue a saved game".ljust(30) + "-> Enter \"2\"").center(WIDTH)
+        puts (PAD + "Play with your friend".ljust(30) + "-> Enter \"1\"").center(WIDTH)
+        puts (PAD + "Play against #{@prez_name}".ljust(30) + "-> Enter \"2\"").center(WIDTH)
+        puts ""
+        puts (PAD + "To continue a saved game".ljust(30) + "-> Enter \"3\"").center(WIDTH)
         input = gets.chomp.to_i
         selection = game_selection(input)
-        selection == "New" ? play : load_game
+        case selection
+        when "New"
+            play
+        when "CPU"
+            play_CPU
+        when "Old"
+            load_game
+        end
     end
 
     def play
         while !@checkmate && !@stalemate
             system "clear"
             @board.to_s
+            puts PAD + "Mr. #{@prez_name.split(" ")[1]} played #{@last_move}" if !@last_move.nil? && @active_player_type == "human"
             puts PAD + "#{active_player}'s move"
             puts PAD + "Ex: \"b1 c3\" \n   move the piece at b1 to c3" unless @check
             puts PAD + "CHECK!!".white.on_red if @check
-            begin
-                move = gets.chomp.downcase
-                save_game if move == "save"
-                debug if move == "dbg"
-                validate_move(move_string: move)
-            rescue => exception
-                system "clear"
-                @board.to_s
-                puts PAD + exception.message
-                puts PAD + "Try again #{@active_player}:"
-                puts PAD + "CHECK!!".white.on_red if @check
-                retry
-            end
+            move = @active_player_type == "CPU" ? illicit_CPU_move : illicit_human_move
+            
             @board.make_move(move_string: move, ep: @en_passant)
             set_en_passant(move)
+            @last_move = move
             @check = check?
             @stalemate = stalemate?
             checkmate? ? @checkmate = true : switch_player
@@ -64,9 +77,58 @@ class Game
         puts PAD + "The game is a Draw".white.on_blue if @stalemate
     end
 
+    def play_CPU
+        system "clear"
+        3.times { puts "" }
+        puts PAD + "Would you like to play as black or white?"
+        puts PAD + "White makes the first move in chess"
+        begin
+            choice = gets.chomp.downcase
+            raise "Please choose either black or white" if !(["white", "black"].include?(choice))
+        rescue => exception
+            system "clear"
+            3.times { puts "" }
+            puts PAD + exception.message
+            puts PAD + "White makes the first move in chess"
+            retry
+        end
+        if choice == "white"
+            @active_player_type = "human"
+        else
+            @active_player_type = "CPU"
+        end
+        play
+    end
+
     def debug
         binding.pry
         self
+    end
+
+    def illicit_human_move
+        begin
+            move = gets.chomp.downcase
+            save_game if move == "save"
+            debug if move == "dbg"
+            validate_move(move_string: move)
+        rescue => exception
+            system "clear"
+            @board.to_s
+            puts PAD + exception.message
+            puts PAD + "Try again #{@active_player}:"
+            puts PAD + "CHECK!!".white.on_red if @check
+            retry
+        end
+        return move
+    end
+
+    def illicit_CPU_move # return a single string to serve as the move
+        moves = []
+        my_cells = @board.ranks.flatten.find_all { |cell| cell.piece != nil && cell.piece.color == @active_player }
+        my_cells.each do |cell|
+            moves << get_available_moves(cell)
+        end
+        return moves.flatten.sample
     end
 
     def validate_move(move_string:) # do not make the call to make move
@@ -188,18 +250,30 @@ class Game
 
     def game_selection(input)
         begin
-            raise "Please enter either a 1 or 2" if !((1..2).include?(input))
+            raise "Please enter either a 1, 2, or 3" if !((1..3).include?(input))
         rescue => exception
             puts PAD + exception.message
             input = gets.chomp.to_i
             retry
         else
-            return input == 1 ? "New" : "Old"
+            case input
+            when 1
+                return "New"
+            when 2
+                return "CPU"
+            when 3
+                return "Old"
+            end
         end
+    end
+
+    def get_CPU
+        return PRESIDENTS.sample
     end
 
     def switch_player
         @active_player = @active_player == "white" ? "black" : "white"
+        @active_player_type = @active_player_type == "CPU" ? "human" : "CPU" if !@active_player_type.nil?
     end
 
     def validate_king_safety(from_cell, to_cell) # false indicates the move is not valid
@@ -342,7 +416,7 @@ class Game
         return moves
     end
 
-    def get_available_moves(cell)
+    def get_available_moves(cell) # return array of strings for CPU
         moves = []
         slider = cell.piece.slider
 
